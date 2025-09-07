@@ -9,7 +9,7 @@ export class UsersDataService {
         this.clientActiveList = [...this.clientActiveList, client];
     }
 
-    removeClient(id: Uint8Array<ArrayBufferLike>) {
+    removeClient(id: string) {
         this.clientActiveList = this.clientActiveList.filter(
             (client) => client.id !== id,
         );
@@ -25,7 +25,7 @@ export class UsersDataService {
         return this.clientActiveList;
     }
 
-    getClientById(id: Uint8Array<ArrayBufferLike>): Client | undefined {
+    getClientById(id: string): Client | undefined {
         return this.clientActiveList.find((client) => client.id === id);
     }
 

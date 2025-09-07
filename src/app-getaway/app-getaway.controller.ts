@@ -9,7 +9,7 @@ import {
 import {Server, Socket} from 'socket.io';
 import {UsersDataService} from "../users-data/usersDataService";
 import {Logger} from "@nestjs/common";
-import {UUID} from "typeorm/browser/driver/mongodb/bson.typings";
+import {v4 as uuidv4} from 'uuid';
 import {Client} from "../model/client";
 
 @WebSocketGateway({
@@ -47,7 +47,7 @@ export class AppGetawayController implements OnGatewayInit, OnGatewayDisconnect,
     @SubscribeMessage('request-register')
     handleRegister(@ConnectedSocket() socket: Socket, @MessageBody() data: any) {
         const newClient: Client = {
-            id: UUID.generate(),
+            id: uuidv4(),
             name: data.name,
             role: data.role,
             location: data.location,
@@ -86,6 +86,6 @@ export class AppGetawayController implements OnGatewayInit, OnGatewayDisconnect,
             timestamp: new Date().toISOString(),
         });
 
-        return { status: 'ok' };
+        return {status: 'ok'};
     }
 }
