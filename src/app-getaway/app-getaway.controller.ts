@@ -13,11 +13,6 @@ import {Server, Socket} from 'socket.io';
         origin: '*',
     }
 })
-@WebSocketGateway({
-    cors: {
-        origin: '*',
-    }
-})
 export class AppGetawayController implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
     @WebSocketServer() server: Server;
 

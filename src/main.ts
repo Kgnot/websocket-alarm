@@ -1,9 +1,14 @@
 import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
+import {Logger} from "@nestjs/common";
 
 async function bootstrap() {
+
+    const logger = new Logger();
+
     const app = await NestFactory.create(AppModule);
     // serve Angular from public:
+
 
     app.enableCors({
         origin: '*',
@@ -12,8 +17,10 @@ async function bootstrap() {
         allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
     })
 
-    await app.listen(process.env.PORT ?? 3000);
+    const port = process.env.PORT || 3000;
 
+    await app.listen(port);
+    logger.log("CRunning on port: ", port)
 
 }
 
