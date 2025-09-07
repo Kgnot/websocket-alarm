@@ -7,6 +7,10 @@ import {
     WebSocketServer
 } from "@nestjs/websockets";
 import {Server, Socket} from 'socket.io';
+import {UsersDataService} from "../users-data/usersDataService";
+import {Logger} from "@nestjs/common";
+import {UUID} from "typeorm/browser/driver/mongodb/bson.typings";
+import {Client} from "../model/client";
 
 @WebSocketGateway({
     cors: {
@@ -14,42 +18,72 @@ import {Server, Socket} from 'socket.io';
     }
 })
 export class AppGetawayController implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
+
     @WebSocketServer() server: Server;
+    private logger: Logger = new Logger();
+
+    constructor(private usersDataService: UsersDataService) {
+    }
 
     afterInit(server: Server) {
-        console.info("Socket.IO Server initialized");
+        this.logger.log("Socket.IO Server initialized");
     }
 
     handleConnection(client: Socket, ...args: any[]) {
-        console.info(`Client connected: ${client.id}`);
+
+        client.emit('request-register', {
+            message: 'Por favor enviar la información'
+        });
+
     }
 
     handleDisconnect(client: Socket) {
-        console.info(`Client disconnected: ${client.id}`);
+        this.logger.log(`Client disconnected: ${client.id}`);
+        this.usersDataService.removeClientBySocketId(client.id);
     }
 
     // Escuchar mensajes del cliente:
-    @SubscribeMessage('alarm')
-    handleAlarm(
-        @ConnectedSocket() client: Socket,
-        @MessageBody() payload: any
-    ): any {
-        console.info("Alarm message received: ", payload);
 
-        // Responder al cliente que envió el mensaje
+    @SubscribeMessage('request-register')
+    handleRegister(@ConnectedSocket() socket: Socket, @MessageBody() data: any) {
+        const newClient: Client = {
+            id: UUID.generate(),
+            name: data.name,
+            role: data.role,
+            location: data.location,
+            socketId: socket.id,
+        }
+        this.usersDataService.addClient(newClient);
+
+        socket.emit('registered', {
+            message: 'Registered successfully',
+            client: newClient,
+        })
+    }
+
+
+    @SubscribeMessage('alarm')
+    handleAlarm(@ConnectedSocket() client: Socket, @MessageBody() payload: any) {
+        const sender = this.usersDataService.getClientBySocket(client.id);
+
+        console.info(
+            `Alarm message received from ${sender?.name ?? 'Unknown'}: `,
+            payload,
+        );
+
         client.emit('alarm', {
             status: 'received',
             message: 'Alarm processed successfully',
+            from: sender,
             originalPayload: payload,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
 
-        // Opcionalmente, broadcast a todos los clientes conectados
         this.server.emit('alarm_broadcast', {
             type: 'alarm',
             data: payload,
-            from: client.id,
-            timestamp: new Date().toISOString()
+            from: sender,
+            timestamp: new Date().toISOString(),
         });
 
         return { status: 'ok' };

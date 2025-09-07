@@ -2,6 +2,7 @@ import {Module} from '@nestjs/common';
 // import {ServeStaticModule} from '@nestjs/serve-static';
 // import {join} from 'path';
 import {AppGetawayModule} from './app-getaway/app-getaway.module';
+import { UsersDataModule } from './users-data/usersDataModule';
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import {AppGetawayModule} from './app-getaway/app-getaway.module';
         //     exclude: ['/api*', '/socket.io*'], // ← Cambio aquí
         // }),
         AppGetawayModule,
+        UsersDataModule,
     ],
     controllers: [],
     providers: [],
