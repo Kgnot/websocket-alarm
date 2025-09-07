@@ -1,0 +1,20 @@
+import {NestFactory} from '@nestjs/core';
+import {AppModule} from './app.module';
+
+async function bootstrap() {
+    const app = await NestFactory.create(AppModule);
+    // serve Angular from public:
+
+    app.enableCors({
+        origin: '*',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        credentials: true,
+        allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
+    })
+
+    await app.listen(process.env.PORT ?? 3000);
+
+
+}
+
+bootstrap();
