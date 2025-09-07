@@ -88,4 +88,29 @@ export class AppGetawayController implements OnGatewayInit, OnGatewayDisconnect,
 
         return {status: 'ok'};
     }
+
+    private sendAlarmToRoles(payload: any, sender?: Client) {
+
+        const targetClients = this.usersDataService.getClientsByRoles(["cai"]);
+        const targetSocketIds = targetClients
+            .map(client => client.socketId)
+            .filter(socketId => socketId !== undefined && socketId !== sender?.socketId) as string[];
+
+        if (targetSocketIds.length > 0) {
+            this.logger.log(`Sending alarm to ${targetSocketIds.length}`);
+
+            // Enviar a cada socket individualmente
+            targetSocketIds.forEach(socketId => {
+                this.server.to(socketId).emit('alarm_notification', {
+                    type: 'alarm',
+                    data: payload,
+                    from: sender,
+                    timestamp: new Date().toISOString(),
+                    message: `Nueva alarma de ${sender?.name || 'Usuario desconocido'}`
+                });
+            });
+        } else {
+            this.logger.log('No clients with alarm roles connected');
+        }
+    }
 }

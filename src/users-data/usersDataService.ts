@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Client} from '../model/client';
+import {Role} from "../model/role";
 
 @Injectable()
 export class UsersDataService {
@@ -31,5 +32,27 @@ export class UsersDataService {
 
     getClientBySocket(socketId: string): Client | undefined {
         return this.clientActiveList.find((client) => client.socketId === socketId);
+    }
+
+    getClientsByRole(role: string): Client[] {
+        const transformRole = this.selectRol(role);
+        return this.clientActiveList.filter(client => client.role === transformRole);
+    }
+
+    getClientsByRoles(roles: string[]): Client[] {
+        const transformRoles: Role[] = roles.map(rol => this.selectRol(rol));
+        return this.clientActiveList.filter(client => transformRoles.includes(client.role));
+    }
+
+
+    private selectRol(role: string) {
+        switch (role.toUpperCase()) {
+            case "CLIENT":
+                return Role.CLIENT;
+            case "CAI" :
+                return Role.CAI
+            default:
+                return Role.CLIENT
+        }
     }
 }
